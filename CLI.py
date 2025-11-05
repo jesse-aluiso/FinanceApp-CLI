@@ -35,6 +35,7 @@ def admin_menu(admin_id):
             password = input("Password: ")
             role = input("Role (admin/user): ").lower()
             create_user(name, email, username, password, role, admin_id=admin_id)
+            print(f"Successfully created: User:{username} with Role:{role}")
         elif choice == "2":
             user_id = input("User ID to delete: ")
             delete_user(user_id, admin_id=admin_id)
