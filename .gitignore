@@ -1,0 +1,19 @@
+#Security
+.env
+
+#Python artifacts
+__pycache__/
+*.pyc
+
+#Package files
+*.egg-info/
+dist/
+build/
+
+#Test artifacts
+*.log
+*.sqlite3
+
+#OS-specific
+.DS_Store
+Thumbs.db
