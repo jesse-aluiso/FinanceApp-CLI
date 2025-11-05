@@ -14,7 +14,7 @@ A secure, role-aware command-line banking system built in Python. Supports user 
 ## 🛠️ Setup
 
 1. Clone the repo:
-   git clone https://github.com/yourusername/FinanceApp-CLI.git
+   git clone https://github.com/jesse-aluiso/FinanceApp-CLI.git
    cd FinanceApp-CLI
 Create a .env file:
 
