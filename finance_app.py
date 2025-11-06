@@ -90,3 +90,10 @@ def view_user_logs(user_id):
     else:
         print("No activity found for this user.")
 
+def list_all_users():
+    cursor.execute("SELECT user_id, name, email, username, role FROM users ORDER BY user_id")
+    return cursor.fetchall()
+
+def get_user_by_id(user_id):
+    cursor.execute("SELECT user_id, name, email, username, role FROM users WHERE user_id = %s", (user_id,))
+    return cursor.fetchone()

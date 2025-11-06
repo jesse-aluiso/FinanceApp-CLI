@@ -1,7 +1,7 @@
 from auth import authenticate_user, create_user, delete_user
 from finance_app import (
     open_account, deposit, withdraw, close_account,
-    get_user_accounts, view_user_logs
+    get_user_accounts, view_user_logs, list_all_users, get_user_by_id
 )
 
 def main():
@@ -25,6 +25,8 @@ def admin_menu(admin_id):
         print("1. Create User")
         print("2. Delete User")
         print("3. View User Logs")
+        print("4. View All Users")
+        print("5. View a User")
         print("0. Exit")
         choice = input("Select: ")
 
@@ -38,10 +40,28 @@ def admin_menu(admin_id):
             print(f"Successfully created: User:{username} with Role:{role}")
         elif choice == "2":
             user_id = input("User ID to delete: ")
-            delete_user(user_id, admin_id=admin_id)
+            username = input("Username to delte: ")
+            delete_user(user_id, username, admin_id=admin_id)
+            print(f"User ID: {user_id} has been successfully deleted") #I want to display the username of the user_id that is being delted
         elif choice == "3":
             user_id = input("Enter User ID to view logs: ")
             view_user_logs(user_id)
+        elif choice == "4":
+            users = list_all_users()
+            for uid, name, email, uname, role in users:
+                print(f"User ID: {uid} | Name: {name} | Email: {email} | Username: {uname} | Role: {role}")
+        elif choice == "5":
+            user_id = input("Enter User ID to view: ")
+            user = get_user_by_id(user_id)
+            if user:
+                print(f"\n User Details:")
+                print(f"User ID: {user[0]}")
+                print(f"Name: {user[1]}")
+                print(f"Email:  {user[2]}")
+                print(f"Username: {user[3]}")
+                print(f"Role: {user[4]}")
+            else:    
+                print("No user found with that ID. Please try again.")
         elif choice == "0":
             break
 
