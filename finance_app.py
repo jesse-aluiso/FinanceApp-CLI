@@ -20,7 +20,7 @@ def deposit(account_id, amount):
     # Add deposit to account balance
     cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, account_id))
     conn.commit()
-    print(f"Deposited ${amount:.2f} to account {account_id}")
+    print(f"Deposited ${amount:.2f} to account {account_id}") #Change so it shows the "to account "Account_Type" (for example Deposited amount to account Checking)
     log_user_action(account_id_to_user(account_id), f"Deposited ${amount:.2f} to account {account_id}")
 
 
@@ -97,3 +97,11 @@ def list_all_users():
 def get_user_by_id(user_id):
     cursor.execute("SELECT user_id, name, email, username, role FROM users WHERE user_id = %s", (user_id,))
     return cursor.fetchone()
+
+def view_admin_log():
+    cursor.execute("SELECT log_id, admin_id, action, timestamp FROM audit_log ORDER BY timestamp DESC")
+    logs = cursor.fetchall()
+    print("\nAdmin History Log:")
+    for log in logs:
+        print(f"[{log[3]}] Admin ID: {log[1]} | Action: {log[2]}")
+
