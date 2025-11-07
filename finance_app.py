@@ -105,3 +105,4 @@ def view_admin_log():
     for log in logs:
         print(f"[{log[3]}] Admin ID: {log[1]} | Action: {log[2]}")
 
+

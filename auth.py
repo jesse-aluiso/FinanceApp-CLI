@@ -1,6 +1,7 @@
 import bcrypt  # For password hashing and verification
 from db import cursor, conn  # DB connection and cursor
 from finance_app import (log_user_action)
+from datetime import date, timedelta, datetime
 
 # Hashes a plaintext password using bcrypt
 def hash_password(password):
@@ -12,14 +13,17 @@ def verify_password(input_password, stored_hash):
 
 # Authenticates a user by username and password
 def authenticate_user(username, password):
-    cursor.execute("SELECT user_id, username, password, role, is_temp_password FROM users WHERE username = %s", (username,))
+    cursor.execute("SELECT user_id, username, password, role, is_temp_password, password_expiry FROM users WHERE username = %s", (username,))
     result = cursor.fetchone()
+
     if result and bcrypt.checkpw(password.encode(), result[2].encode()):
+        is_expired = result[5] is not None and result[5] <= date.today()
+
         return {
             "user_id": result[0],
             "username": result[1],
             "role": result[3],
-            "is_temp_password": result[4]
+            "is_temp_password": result[4] or is_expired #Force update if expired
         }
     return None
 
@@ -80,4 +84,22 @@ def update_password(user_id, new_password):
 
     log_user_action(user_id, "Updated password")
     print("Password updated successfully.")
-    
+
+def edit_user(user_id, field, new_value, admin_id=None):
+    valied_fields = ["name", "email", "username", "role", "password", "is_temp_password", "password_expiry"]
+    if field not in valied_fields:
+        print("Invalid field.")
+        return
+    if field == "password":
+        hashed = bcrypt.hashpw(new_value.encode(), bcrypt.gensalt()).decode()
+        cursor.execute("UPDATE users SET password = %s, is_temp_password = TRUE WHERE user_id = %s", (hashed, user_id))
+    elif field == "password_expiry":
+        expiry_date = datetime.now() + timedelta(days=90)
+        cursor.execute("UPDATE users SET password_expiry = %s WHERE user_id %s", (expiry_date.date(), user_id)) 
+    else: 
+        cursor.execute(f"UPDATE users SET {field} = %s WHERE user_id = %s", (new_value, user_id))
+        
+    log_admin_action(admin_id, f"Updated {field} for user ID {user_id}")
+    conn.commit()
+    print("User updated successfully.")
+

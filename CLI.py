@@ -2,25 +2,29 @@ from auth import *
 from finance_app import *
 
 def main():
-    print("Welcome to FinanceApp CLI")
-    username = input("Username: ")
-    password = input("Password: ")
+    while True:
+        print("Welcome to FinanceApp CLI")
+        username = input("Username: ")
+        password = input("Password: ")
 
-    user = authenticate_user(username, password)
-    if not user:
-        print("Invalid credentials.")
-        return
+        user = authenticate_user(username, password)
+        if not user:
+            print("Invalid credentials.")
+            continue
     
-    if user["is_temp_password"]:
-        print("You are using a temporary password. Please update it now.")
-        new_password = input("Enter new password: ")
-        update_password(user["user_id"], new_password)
+        if user["is_temp_password"]:
+            print("You are using a temporary password. Please update it now.")
+            new_password = input("Enter new password: ")
+            update_password(user["user_id"], new_password)
         
 
-    if user["role"] == "admin":
-        admin_menu(user["user_id"])
-    else:
-        user_menu(user["user_id"])
+        if user["role"] == "admin":
+            signed_out = admin_menu(user["user_id"])
+        else:
+            signed_out = admin_menu(user["user_id"])
+
+        if not signed_out:
+            break #Exit the app
 #Delted history bank(Log) for admin -> For better tracking of what was deleted/created,etc. by admin from admin_log maybe - this feature is only accessible by admin role ? 
 #Give this user a temporary password and then have them create their password in their creation(idk how to do this yet but basically (ex. adding a feature for the user to update password and this is then salted into the database))
 def admin_menu(admin_id):
@@ -33,6 +37,8 @@ def admin_menu(admin_id):
         print("5. View a User")
         print("6. View Admin History Log")
         print("7. Update My Password")
+        print("8. Sign Out")
+        print("9. Edit a User")
         print("0. Exit")
         choice = input("Select: ")
 
@@ -84,8 +90,25 @@ def admin_menu(admin_id):
                     print("Passwords do not match. Please try again.")
             else:
                 print("Incorrect current password. Please try again.")
+        elif choice == "8":
+            return True  # Sign out
+        elif choice == "9":
+            user_id = input("Enter User ID to edit: ")
+            print("Which field would you like to edit?")
+            print("Options: name, email, username, role, password, is_temp_password, password_expiry")
+            field = input("Field: ").strip().lower()
+
+            if field == "password_expiry":
+                confirm = input("Set password to expire in 90 days? (yes/no): ").lower()
+                if confirm == "yes":
+                    edit_user(user_id, field, None, admin_id=admin_id)
+                else:
+                    print("Cancelled.")
+            else:
+                new_value = input(f"Enter new value for {field}: ")
+                edit_user(user_id, field, new_value, admin_id=admin_id)    
         elif choice == "0":
-            break
+            return False  # Exit app
 #also lets add a feature to sign out so that we dont have to run application all the time - for example i can sign out of the admin account and then sign into my user account.
 def user_menu(user_id):
     while True:
@@ -97,6 +120,7 @@ def user_menu(user_id):
         print("5. View My Accounts")
         print("6. View My Activity Log")
         print("7. Update My Password")
+        print("8. Sign Out")
         print("0. Exit")
         choice = input("Select: ")
 
@@ -135,9 +159,10 @@ def user_menu(user_id):
                     print("Passwords do not match. Please try again.")
             else:
                 print("Incorrect current password. Please try again.")
-        
+        elif choice == "8":
+            return True  # Sign out
         elif choice == "0":
-            break
+            return False  # Exit app
 
 if __name__ == "__main__":
     main()
