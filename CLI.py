@@ -1,5 +1,7 @@
 from auth import *
 from finance_app import *
+from forecast_module import forecast_spending
+from datetime import datetime
 
 def main():
     while True:
@@ -52,8 +54,12 @@ def admin_menu(admin_id):
             print(f"Successfully created- User:{username} with Role:{role} and temporary password")
         elif choice == "2":
             user_id = input("User ID to delete: ")
-            delete_user(user_id, admin_id=admin_id)
-            print(f"User ID: {user_id} has been successfully deleted") #I want to display the username of the user_id that is being deleted
+            user = get_user_by_id(user_id)
+            if user:
+                delete_user(user_id, admin_id=admin_id)
+                print(f"User ID: {user_id} has been successfully deleted") #I want to display the username of the user_id that is being deleted
+            else:
+                print("No user found with that ID. Please try again.")
         elif choice == "3":
             user_id = input("Enter User ID to view logs: ")
             view_user_logs(user_id)
@@ -121,7 +127,9 @@ def user_menu(user_id):
         print("6. View My Activity Log")
         print("7. Update My Password")
         print("8. View Account Balance")
-        print("9. Sign Out")
+        print("9. Forecast Spending")
+        print("10. Create Spending Category")
+        print("11. Sign Out")
         print("0. Exit")
         choice = input("Select: ")
 
@@ -129,30 +137,56 @@ def user_menu(user_id):
             account_type = input("Account Type (Checking/Savings/Retirement): ")
             open_account(user_id, account_type)
         elif choice == "2":
-            account_type = input("Account Type (Cheking/Savings/Retirement): ") # Ask for account_type
+            category_name = input("ENTER category for this transaction (e.g., Groceries): ")
+            cursor.execute("SELECT category_id FROM categories WHERE user_id = %s AND name = %s", (user_id, category_name))
+            result = cursor.fetchone()
+            if not result:
+                print("Category not found. Please create it first.")
+                continue
+            category_id = result[0]
+
+            account_type = input("Account Type (Checking/Savings/Retirement): ") # Ask for account_type
             cursor.execute("SELECT account_id FROM accounts WHERE user_id = %s AND account_type = %s", (user_id, account_type))
             result = cursor.fetchone()
 
             if not result:
                 print(f"No {account_type} account found.")
-            else:
-                account_id = result[0]
+                continue
+            account_id = result[0]
+            try:
                 amount = float(input("Amount to deposit: "))
                 deposit(account_id, amount)
+                log_transaction(user_id, account_id, amount, category_id, "deposit")
+                print(f"Deposited ${amount:.2f} into {account_type} account under category '{category_name}'.")
+            except ValueError:
+                print("Invalid amount. Please enter a number value.")
         elif choice == "3":
+            category_name = input("ENTER category for this transaction (e.g., Groceries): ")
+            cursor.execute("SELECT category_id FROM categories WHERE user_id = %s AND name = %s", (user_id, category_name))
+            result = cursor.fetchone()
+            if not result:
+                print("Category not found. Please create it first.")
+                continue
+            category_id = result[0]
+             
+
             account_type = input("Account type (Checking/Savings/Retirement): ")
             cursor.execute("SELECT account_id FROM accounts WHERE user_id = %s AND account_type = %s", (user_id, account_type))
             result = cursor.fetchone()
 
             if not result:
                 print(f"No {account_type} account found. Please try again.")
-            else:
-                account_id = result[0]
-                try:
-                    amount = float(input("Amount to withdraw: "))
-                    withdraw(account_id, amount)
-                except ValueError:
-                    print("Invalid amount. Please enter a numeric value.")
+                continue
+            account_id = result[0]
+            
+            try:
+                amount = float(input("Amount to withdraw: "))
+                withdraw(account_id, amount)
+                log_transaction(user_id, account_id, amount, category_id, "withdraw")
+                print(f"Withdrew ${amount:.2f} from {account_type} account under category '{category_name}'.")
+
+            except ValueError:
+                print("Invalid amount. Please enter a numeric value.")
         elif choice == "4":
             account_type = input("Account Type to close(Checking/Savings/Retirement): ")
             close_account(user_id, account_type)
@@ -188,6 +222,12 @@ def user_menu(user_id):
             else: 
                 print(f"No {account_type} account found. Please try again.")
         elif choice == "9":
+            category = input("Enter category to forecast (e.g., Groceries): ")
+            forecast_spending(user_id, category)
+        elif choice == "10":
+            category_name = input("Enter new category name: ")
+            create_category(user_id, category_name)
+        elif choice == "11":
             return True  # Sign out
         elif choice == "0":
             return False  # Exit app

@@ -1,4 +1,6 @@
 from db import cursor, conn # Import the database cursor and connection from db.py
+from datetime import datetime
+
 
 def open_account(user_id, account_type):
     # Check if the user already has this account type
@@ -113,4 +115,15 @@ def view_admin_log():
     for log in logs:
         print(f"[{log[3]}] Admin ID: {log[1]} | Action: {log[2]}")
 
+def create_category(user_id, name):
+    cursor.execute("INSERT INTO categories (user_id, name) VALUES (%s, %s)", (user_id, name))
+    conn.commit()
+    print(f"Category '{name}' created.")
 
+def log_transaction(user_id, account_id, amount, category_id, action):
+    date = datetime.now().date()
+    cursor.execute("""
+        INSERT INTO transactions (user_id, account_id, amount, category_id, action, timestamp, date)
+        VALUES (%s, %s, %s, %s, %s, NOW(), %s)              
+    """, (user_id, account_id, amount, category_id, action, date))
+    conn.commit()
