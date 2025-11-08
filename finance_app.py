@@ -18,10 +18,14 @@ def open_account(user_id, account_type):
 
 def deposit(account_id, amount):
     # Add deposit to account balance
+    cursor.execute("SELECT account_type FROM accounts WHERE account_id = %s", (account_id, ))
+    result = cursor.fetchone()
+    account_type = result[0] if result else "unknown"
+    
     cursor.execute("UPDATE accounts SET balance = balance + %s WHERE account_id = %s", (amount, account_id))
     conn.commit()
-    print(f"Deposited ${amount:.2f} to account {account_id}") #Change so it shows the "to account "Account_Type" (for example Deposited amount to account Checking)
-    log_user_action(account_id_to_user(account_id), f"Deposited ${amount:.2f} to account {account_id}")
+    print(f"Deposited: ${amount:.2f} to account type: {account_type}") #Change so it shows the "to account "Account_Type" (for example Deposited amount to account Checking)
+    log_user_action(account_id_to_user(account_id), f"Deposited: ${amount:.2f} to account type: {account_type}")
 
 
 def withdraw(account_id, amount):
@@ -35,16 +39,20 @@ def withdraw(account_id, amount):
 
     balance, user_id = result
 
+    cursor.execute("SELECT account_type FROM accounts WHERE account_id = %s", (account_id,))
+    type_result = cursor.fetchone()
+    account_type = type_result[0] if type_result else "Unknown"
+
     if amount > balance:
         print("Withdrawal failed: Insufficient funds.")
-        log_user_action(user_id, f"Attempted to withdraw ${amount:.2f} from account {account_id} — insufficient funds")
+        log_user_action(user_id, f"Attempted to withdraw ${amount:.2f} from {account_type} — insufficient funds")
         return
 
     # Proceed with withdrawal
     cursor.execute("UPDATE accounts SET balance = balance - %s WHERE account_id = %s", (amount, account_id))
     conn.commit()
-    print(f"Withdrawn ${amount:.2f} from account {account_id}")
-    log_user_action(user_id, f"Withdrew ${amount:.2f} from account {account_id}")
+    print(f"Withdrawn ${amount:.2f} from {account_type} account")
+    log_user_action(user_id, f"Withdrew ${amount:.2f} from account {account_type} account")
 
 
 def get_user_accounts(user_id):

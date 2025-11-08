@@ -21,7 +21,7 @@ def main():
         if user["role"] == "admin":
             signed_out = admin_menu(user["user_id"])
         else:
-            signed_out = admin_menu(user["user_id"])
+            signed_out = user_menu(user["user_id"])
 
         if not signed_out:
             break #Exit the app
@@ -120,7 +120,8 @@ def user_menu(user_id):
         print("5. View My Accounts")
         print("6. View My Activity Log")
         print("7. Update My Password")
-        print("8. Sign Out")
+        print("8. View Account Balance")
+        print("9. Sign Out")
         print("0. Exit")
         choice = input("Select: ")
 
@@ -128,13 +129,30 @@ def user_menu(user_id):
             account_type = input("Account Type (Checking/Savings/Retirement): ")
             open_account(user_id, account_type)
         elif choice == "2":
-            account_id = input("Account ID: ") # Ask for account_type
-            amount = float(input("Amount to deposit: "))
-            deposit(account_id, amount)
+            account_type = input("Account Type (Cheking/Savings/Retirement): ") # Ask for account_type
+            cursor.execute("SELECT account_id FROM accounts WHERE user_id = %s AND account_type = %s", (user_id, account_type))
+            result = cursor.fetchone()
+
+            if not result:
+                print(f"No {account_type} account found.")
+            else:
+                account_id = result[0]
+                amount = float(input("Amount to deposit: "))
+                deposit(account_id, amount)
         elif choice == "3":
-            account_id = input("Account ID: ")
-            amount = float(input("Amount to withdraw: "))
-            withdraw(account_id, amount)
+            account_type = input("Account type (Checking/Savings/Retirement): ")
+            cursor.execute("SELECT account_id FROM accounts WHERE user_id = %s AND account_type = %s", (user_id, account_type))
+            result = cursor.fetchone()
+
+            if not result:
+                print(f"No {account_type} account found. Please try again.")
+            else:
+                account_id = result[0]
+                try:
+                    amount = float(input("Amount to withdraw: "))
+                    withdraw(account_id, amount)
+                except ValueError:
+                    print("Invalid amount. Please enter a numeric value.")
         elif choice == "4":
             account_type = input("Account Type to close(Checking/Savings/Retirement): ")
             close_account(user_id, account_type)
@@ -160,6 +178,16 @@ def user_menu(user_id):
             else:
                 print("Incorrect current password. Please try again.")
         elif choice == "8":
+            account_type = input("Account Type (Checking/Savings/Retirement): ")
+            cursor.execute("SELECT balance FROM accounts WHERE user_id = %s AND account_type = %s", (user_id, account_type))
+            result = cursor.fetchone()
+
+            if result:
+                balance = result[0]
+                print(f"Balance in {account_type}: ${balance:.2f}")
+            else: 
+                print(f"No {account_type} account found. Please try again.")
+        elif choice == "9":
             return True  # Sign out
         elif choice == "0":
             return False  # Exit app
