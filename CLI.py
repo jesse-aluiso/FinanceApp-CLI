@@ -37,8 +37,8 @@ def admin_menu(admin_id):
         print("5. View a User")
         print("6. View Admin History Log")
         print("7. Update My Password")
-        print("8. Sign Out")
-        print("9. Edit a User")
+        print("8. Edit a User")
+        print("9. Sign out")
         print("0. Exit")
         choice = input("Select: ")
 
@@ -52,7 +52,6 @@ def admin_menu(admin_id):
             print(f"Successfully created- User:{username} with Role:{role} and temporary password")
         elif choice == "2":
             user_id = input("User ID to delete: ")
-            username = input("Username to delte: ")
             delete_user(user_id, admin_id=admin_id)
             print(f"User ID: {user_id} has been successfully deleted") #I want to display the username of the user_id that is being deleted
         elif choice == "3":
@@ -90,9 +89,8 @@ def admin_menu(admin_id):
                     print("Passwords do not match. Please try again.")
             else:
                 print("Incorrect current password. Please try again.")
+
         elif choice == "8":
-            return True  # Sign out
-        elif choice == "9":
             user_id = input("Enter User ID to edit: ")
             print("Which field would you like to edit?")
             print("Options: name, email, username, role, password, is_temp_password, password_expiry")
@@ -106,7 +104,9 @@ def admin_menu(admin_id):
                     print("Cancelled.")
             else:
                 new_value = input(f"Enter new value for {field}: ")
-                edit_user(user_id, field, new_value, admin_id=admin_id)    
+                edit_user(user_id, field, new_value, admin_id=admin_id)  
+        elif choice == "9":
+            return True  # Sign out  
         elif choice == "0":
             return False  # Exit app
 #also lets add a feature to sign out so that we dont have to run application all the time - for example i can sign out of the admin account and then sign into my user account.

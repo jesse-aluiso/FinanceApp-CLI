@@ -51,8 +51,8 @@ def withdraw(account_id, amount):
     # Proceed with withdrawal
     cursor.execute("UPDATE accounts SET balance = balance - %s WHERE account_id = %s", (amount, account_id))
     conn.commit()
-    print(f"Withdrawn ${amount:.2f} from {account_type} account")
-    log_user_action(user_id, f"Withdrew ${amount:.2f} from account {account_type} account")
+    print(f"Withdrew: ${amount:.2f} from {account_type} account")
+    log_user_action(user_id, f"Withdrew: ${amount:.2f} from account {account_type} account")
 
 
 def get_user_accounts(user_id):
