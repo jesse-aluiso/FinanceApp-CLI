@@ -2,6 +2,7 @@ from auth import *
 from finance_app import *
 from forecast_module import forecast_spending
 from datetime import datetime
+from datetime import datetime, timedelta
 
 def main():
     while True:
@@ -156,7 +157,12 @@ def user_menu(user_id):
             try:
                 amount = float(input("Amount to deposit: "))
                 deposit(account_id, amount)
-                log_transaction(user_id, account_id, amount, category_id, "deposit")
+                
+
+                # For testing only — simulate last month
+                days_ago = int(input("How many days ago to simulate this transaction? (e.g., 30, 60): "))
+                date_override = datetime.now().date() - timedelta(days=days_ago)
+                log_transaction(user_id, account_id, amount, category_id, "deposit", date_override)
                 print(f"Deposited ${amount:.2f} into {account_type} account under category '{category_name}'.")
             except ValueError:
                 print("Invalid amount. Please enter a number value.")

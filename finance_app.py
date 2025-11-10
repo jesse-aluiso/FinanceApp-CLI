@@ -120,10 +120,11 @@ def create_category(user_id, name):
     conn.commit()
     print(f"Category '{name}' created.")
 
-def log_transaction(user_id, account_id, amount, category_id, action):
-    date = datetime.now().date()
+def log_transaction(user_id, account_id, amount, category_id, action, date=None):
+    if date is None:
+        date = datetime.now().date()
     cursor.execute("""
         INSERT INTO transactions (user_id, account_id, amount, category_id, action, timestamp, date)
-        VALUES (%s, %s, %s, %s, %s, NOW(), %s)              
-    """, (user_id, account_id, amount, category_id, action, date))
+        VALUES (%s, %s, %s, %s, %s, %s, %s)              
+    """, (user_id, account_id, amount, category_id, action, date, date))
     conn.commit()
