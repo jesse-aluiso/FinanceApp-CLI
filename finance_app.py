@@ -123,6 +123,7 @@ def create_category(user_id, name):
 def log_transaction(user_id, account_id, amount, category_id, action, date=None):
     if date is None:
         date = datetime.now().date()
+    timestamp = datetime.now()
     cursor.execute("""
         INSERT INTO transactions (user_id, account_id, amount, category_id, action, timestamp, date)
         VALUES (%s, %s, %s, %s, %s, %s, %s)              

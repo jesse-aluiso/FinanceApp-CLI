@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 load_dotenv()
 
@@ -29,7 +30,7 @@ def forecast_spending(user_id, category_name):
 
     #Query transactions
     query = """
-    SELECT amount, DATE_FORMAT(date, '%Y-%m') AS month
+    SELECT amount, DATE_FORMAT(date, '%Y-%m') AS month, action
     FROM transactions
     WHERE user_id = %s AND category_id = %s
     """
@@ -43,8 +44,10 @@ def forecast_spending(user_id, category_name):
         return
     
     #Build DataFrame - Forecast logic
-    df = pd.DataFrame(rows, columns=["amount", "month"])
-    df = df.groupby("month")["amount"].sum().reset_index()
+    df = pd.DataFrame(rows, columns=["amount", "month", "action"])
+    df["signed_amount"] = df.apply(lambda row: -row["amount"] if row["action"] == "withdraw" else row["amount"], axis=1)
+    df = df.groupby("month")["signed_amount"].sum().reset_index()
+    df.rename(columns={"signed_amount": "amount"}, inplace=True)
     df["month_num"] = range(len(df))
     if df.empty:
         print("DataFrame is empty. Check query and transaction dates.")
@@ -87,8 +90,14 @@ def forecast_spending(user_id, category_name):
 
     print(f"Forecast: You are predicted to spend ~${forecast:.2f} on {category_name} next month.")
 
-    #Visualization
-    forecast_month_label = f"{df['month'].iloc[-1]} + 1"
+    #Visualization for last actual month as datetime
+    last_month_str = df["month"].iloc[-1]
+    last_month_dt = datetime.strptime(last_month_str, "%Y-%m")
+    #Use month_num to calculate forecast horizon
+    #forecast_step = df["month_num"].max() + 1
+    next_month_dt = last_month_dt + relativedelta(months=1)
+    forecast_month_label = next_month_dt.strftime("%Y-%m")
+
     df_forecast = pd.DataFrame({
         "month": list(df["month"]) + [forecast_month_label],
         "amount": list(df["amount"]) + [forecast]

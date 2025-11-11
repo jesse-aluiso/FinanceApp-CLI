@@ -121,7 +121,7 @@ def user_menu(user_id):
     while True:
         print("\n User Menu")
         print("1. Open Account")
-        print("2. Deposit Funds") # I want it to ask for an account_type not an account_id this makes it easier for the user 
+        print("2. Deposit Funds") 
         print("3. Withdraw Funds")
         print("4. Close Account")
         print("5. View My Accounts")
@@ -160,9 +160,17 @@ def user_menu(user_id):
                 
 
                 # For testing only — simulate last month
-                days_ago = int(input("How many days ago to simulate this transaction? (e.g., 30, 60): "))
-                date_override = datetime.now().date() - timedelta(days=days_ago)
-                log_transaction(user_id, account_id, amount, category_id, "deposit", date_override)
+                direction = input("Simulate transaction in the past or future? (Enter 'past' or 'future'): ").strip().lower()
+                days = int(input("How many days from today? (e.g., 30,60, etc.): "))
+                if direction == "future":
+                    data_override = datetime.now().date() + timedelta(days=days)
+                    print(f"Transaction will be logged with date: {data_override}")
+                else:
+                    data_override = datetime.now().date() - timedelta(days=days)
+                           
+                #days_offset = int(input("Enter number of days offset from today (negative for future, postive for past) (e.g., 30, 60): "))
+                #date_override = datetime.now().date() - timedelta(days=days_offset)
+                log_transaction(user_id, account_id, amount, category_id, "deposit", data_override)
                 print(f"Deposited ${amount:.2f} into {account_type} account under category '{category_name}'.")
             except ValueError:
                 print("Invalid amount. Please enter a number value.")
@@ -187,8 +195,15 @@ def user_menu(user_id):
             
             try:
                 amount = float(input("Amount to withdraw: "))
+                direction = input("Simulate withdrawal in the past or future? (Enter 'past' or 'future'): ").strip().lower()
+                days = int(input("How many days from today? (e.g., 30, 60, etc.): "))
+                if direction == "future":
+                    date_override = datetime.now().date() + timedelta(days=days)
+                else:
+                    date_override = datetime.now().date() - timedelta(days=days)
+                print(f"Withdrawal will be logged with date: {date_override}") 
                 withdraw(account_id, amount)
-                log_transaction(user_id, account_id, amount, category_id, "withdraw")
+                log_transaction(user_id, account_id, amount, category_id, "withdraw", date_override)
                 print(f"Withdrew ${amount:.2f} from {account_type} account under category '{category_name}'.")
 
             except ValueError:
